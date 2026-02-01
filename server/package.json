@@ -1,0 +1,41 @@
+{
+    "name": "feedscope-server",
+    "version": "1.0.0",
+    "description": "FeedScope AI Backend - Express + MongoDB",
+    "main": "src/server.js",
+    "type": "module",
+    "scripts": {
+        "start": "node src/server.js",
+        "dev": "nodemon src/server.js",
+        "seed": "node src/utils/seedAdmin.js",
+        "seed:feedback": "node src/utils/seedFeedback.js"
+    },
+    "keywords": [
+        "feedback",
+        "sentiment-analysis",
+        "mern"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "@vitalets/google-translate-api": "^9.2.0",
+        "axios": "^1.6.5",
+        "bcryptjs": "^2.4.3",
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
+        "express-rate-limit": "^7.1.5",
+        "helmet": "^7.1.0",
+        "joi": "^17.11.0",
+        "json2csv": "^6.0.0-alpha.2",
+        "jsonwebtoken": "^9.0.2",
+        "mongoose": "^8.0.3",
+        "pdfkit": "^0.14.0",
+        "string-similarity": "^4.0.4",
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-express": "^5.0.1"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.2"
+    }
+}

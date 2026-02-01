@@ -1,0 +1,6 @@
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+transformers==4.36.2
+torch
+pydantic==2.5.3
+python-multipart==0.0.6
