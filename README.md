@@ -1,6 +1,6 @@
 # FeedScope AI 🚀
 
-![FeedScope AI Header](https://via.placeholder.com/1200x400/0f172a/6366f1?text=FeedScope+AI+-+Intelligent+Feedback+System)
+**🌟 Live Demo:** [https://feed-scope-ai.vercel.app/](https://feed-scope-ai.vercel.app/)
 
 A production-grade, real-time MERN web application with **Multilingual AI Sentiment Analysis**, **Voice Input**, and a highly interactive **Admin Analytics Dashboard**. FeedScope AI goes beyond simple feedback collection by orchestrating contextual AI responses, analyzing complex emotional tone across languages, and surfacing executive insights effortlessly.
 
