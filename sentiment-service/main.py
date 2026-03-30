@@ -89,12 +89,15 @@ def preprocess_text(text: str) -> str:
 
 @app.on_event("startup")
 async def load_model():
-    """Load HuggingFace multilingual model once at startup"""
+    """Load HuggingFace model once at startup"""
     global sentiment_analyzer
     try:
-        model_name = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
-        logger.info(f"Loading multilingual sentiment model: {model_name}")
-        logger.info("This supports Hindi, English, emojis, and 100+ languages.")
+        # Reverting to DistilBERT for Free-Tier deployments.
+        # XLM-RoBERTa (>1GB) causes an Out-Of-Memory (OOM) silent crash on Render's 512MB Free Tier.
+        # We rely on the Node.js backend's translation service to convert Hindi to English before sending it here!
+        model_name = "distilbert-base-uncased-finetuned-sst-2-english"
+        logger.info(f"Loading lightweight sentiment model: {model_name}")
+        logger.info("This model fits inside the 512MB RAM limit of Render Free Tier.")
 
         device = 0 if torch.cuda.is_available() else -1
         sentiment_analyzer = pipeline(
@@ -105,23 +108,12 @@ async def load_model():
             return_all_scores=False,  # only top label
         )
 
-        logger.info("✅ Multilingual sentiment model loaded successfully!")
+        logger.info("✅ DistilBERT sentiment model loaded successfully!")
         logger.info(f"Using device: {'GPU' if torch.cuda.is_available() else 'CPU'}")
 
     except Exception as e:
-        logger.error(f"❌ Failed to load multilingual model: {str(e)}")
-        # Fallback: try loading the original distilbert model
-        try:
-            logger.info("Attempting fallback to distilbert-base-uncased-finetuned-sst-2-english...")
-            sentiment_analyzer = pipeline(
-                "sentiment-analysis",
-                model="distilbert-base-uncased-finetuned-sst-2-english",
-                device=0 if torch.cuda.is_available() else -1
-            )
-            logger.info("✅ Fallback model loaded (English-only, limited Hindi/negation support)")
-        except Exception as e2:
-            logger.error(f"❌ Fallback model also failed: {str(e2)}")
-            raise
+        logger.error(f"❌ Failed to load model: {str(e)}")
+        raise
 
 
 @app.get("/")
