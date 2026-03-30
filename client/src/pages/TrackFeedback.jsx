@@ -5,7 +5,8 @@ import { Search, Copy, CheckCheck, Star, Bot, Clock, CheckCircle2, Loader2, Aler
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Hardcoded for production to bypass Vercel environment variable injection bugs
+const API_BASE = 'https://feedscope-backend.onrender.com/api';
 
 // ── Stepper configuration ──────────────────────────────────────────────────
 const STEPPER_STAGES = [
