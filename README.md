@@ -1,55 +1,46 @@
-A production-grade MERN web application with AI-powered sentiment analysis, multilingual support (Hindi & English), voice input, and comprehensive admin analytics dashboard.
+# FeedScope AI 🚀
+
+![FeedScope AI Header](https://via.placeholder.com/1200x400/0f172a/6366f1?text=FeedScope+AI+-+Intelligent+Feedback+System)
+
+A production-grade, real-time MERN web application with **Multilingual AI Sentiment Analysis**, **Voice Input**, and a highly interactive **Admin Analytics Dashboard**. FeedScope AI goes beyond simple feedback collection by orchestrating contextual AI responses, analyzing complex emotional tone across languages, and surfacing executive insights effortlessly.
 
 ---
 
-## ✨ Features
+## ✨ Cutting-Edge Features
 
-### 🎯 Core Features
-- **AI Sentiment Analysis** - HuggingFace Transformers (DistilBERT) for accurate sentiment detection
-- **Multilingual Support** - English & Hindi with automatic translation
-- **Voice Input** - Speech-to-text feedback submission
-- **Emotion Detection** - AI-powered emotion classification
-- **Category Prediction** - Automatic feedback categorization
-- **Spam Detection** - Rate limiting and duplicate detection
-- **Priority Management** - Auto-flagging of critical feedback
+### 🧠 Advanced AI & NLP
+- **Multilingual Sentiment Analysis (XLM-RoBERTa)**: Natively parses 100+ languages (including Hindi & English) detecting nuanced context, double negatives, slang, and emojis.
+- **Dual AI Response Orchestration**: Automatically generates two unique responses per ticket:
+  - **User Acknowledgment**: Instant, empathetic confirmation sent to the user's tracking page.
+  - **Admin Resolution Draft**: Action-oriented response pre-filled for the administrative team.
+- **AI Executive Summaries (Gemini 2.5 Flash)**: Generates highly detailed overview reports of all platform feedback with smart 1-hour caching and real-time "stale data" warnings.
+- **Emotion & Category Prediction**: Granular classification identifying specific emotions (Frustrated, Satisfied, Angry) mapping them to actionable categories.
 
-### 📊 Admin Dashboard
-- **Real-time Analytics** - KPI cards, charts, and trends
-- **Advanced Filters** - Search, date range, sentiment, category, priority, status
-- **Data Visualization** - Pie charts, bar charts, line graphs (Recharts)
-- **Export Functionality** - CSV and PDF report generation
-- **Feedback Management** - Status updates, response suggestions
-- **Critical Alerts** - Immediate notification of urgent issues
+### ⚡ Real-Time Architecture
+- **Socket.io Live Syncing**: Admin dashboards update instantaneously. New feedback, status changes, and newly claimed tickets flash on-screen without requiring browser refreshes.
+- **Instant Live Stats**: KPI counters and charts update dynamically via WebSocket events.
 
-### 🎨 Premium UI/UX
-- **Glassmorphism Design** - Modern, premium aesthetic
-- **Smooth Animations** - Framer Motion transitions
-- **Responsive Layout** - Mobile, tablet, desktop optimized
-- **Dark Theme** - Easy on the eyes
+### 🎯 Seamless User Experience
+- **Voice-to-Text Feedback**: Bilingual Web Speech API integration allows for frictionless audio feedback submission.
+- **Ticket Tracking & Claiming**: Anonymous users receive tracking IDs (e.g., `FSC-20260325-A7X2`). Users can later sign up and "claim" these tickets to attach them to their permanent account history.
+- **Glassmorphism Premium UI**: Built with Tailwind CSS and Framer Motion for buttery-smooth animations and modern deep-dark aesthetics.
+
+### 📊 Comprehensive Admin Dashboard
+- **Actionable Analytics**: Deep-dive charts (Pie, Bar, Line) via Recharts.
+- **Critical Alert System**: Auto-flags high-priority feedback (Very Negative sentiment + lowest ratings) to demand immediate attention.
+- **Multi-dimensional Filtering**: Instantly sort by date ranges, sentiment, categories, priorities, and status.
+- **Report Generation**: Export full datasets to CSV or generate polished PDF reports.
 
 ---
 
 ## 🛠️ Technology Stack
 
-### Frontend
-- React 18 + Vite
-- Tailwind CSS
-- Framer Motion
-- Recharts
-- Lucide Icons
-- React Hot Toast
-
-### Backend
-- Node.js + Express
-- MongoDB + Mongoose
-- JWT Authentication
-- bcryptjs
-
-### AI/ML
-- Python FastAPI
-- HuggingFace Transformers
-- PyTorch
-- Google Translate API
+| Domain | Technologies Used |
+| :--- | :--- |
+| **Frontend** | React 18, Vite, Tailwind CSS, Framer Motion, Recharts, Lucide Icons |
+| **Backend** | Node.js, Express, Socket.io, JWT, bcryptjs |
+| **Database** | MongoDB Atlas, Mongoose |
+| **AI / NLP Services** | Python, FastAPI, HuggingFace (`cardiffnlp/twitter-xlm-roberta-base-sentiment`), PyTorch, Google Gemini API |
 
 ---
 
@@ -62,267 +53,85 @@ A production-grade MERN web application with AI-powered sentiment analysis, mult
 
 ### 1. Clone Repository
 ```bash
-cd "c:\FeedScope AI"
+git clone https://github.com/anuragmishrash/FeedScope-AI.git
+cd FeedScope-AI
 ```
 
-### 2. Setup Python Sentiment Microservice
+### 2. Setup Python NLP Microservice
+The sentiment service utilizes a 400MB transformer model which is downloaded on first run.
 ```bash
 cd sentiment-service
-
-# Create virtual environment
 python -m venv venv
 
-# Activate virtual environment
 # Windows:
 venv\Scripts\activate
-# Mac/Linux:
-# source venv/bin/activate
+# Mac/Linux: source venv/bin/activate
 
-# Install dependencies
 pip install -r requirements.txt
-
-# Run service
 python main.py
-# Service runs on http://127.0.0.1:8001
+# Runs on http://127.0.0.1:8001
 ```
 
-### 3. Setup Backend (Express Server)
+### 3. Setup Node.js Backend
 ```bash
-cd ..\server
-
-# Install dependencies
+cd ../server
 npm install
-
-# Configure environment variables (already created in .env)
-# Make sure MongoDB URI is correct
-
-# Run server
 npm run dev
-# Server runs on http://localhost:5000
+# Runs on http://localhost:5000 with Socket.io attached
 ```
+*(Ensure you duplicate `.env.example` to `.env` and fill in your `MONGO_URI` and `GEMINI_API_KEY`)*
 
-### 4. Setup Frontend (React Client)
+### 4. Setup React Frontend
 ```bash
-cd ..\client
-
-# Install dependencies
+cd ../client
 npm install
-
-# Run development server
 npm run dev
 # App runs on http://localhost:3000
 ```
 
 ---
 
-## 🚀 Running the Application
-
-You need to run all 3 services simultaneously:
-
-**Terminal 1** - Python Sentiment Service:
+## 🚀 Running the Application Properly
+To experience the full power of FeedScope AI, **all three services must run simultaneously**. For a one-click startup on Windows, run the provided batch script:
 ```bash
-cd sentiment-service
-venv\Scripts\activate
-python main.py
+START-ALL.bat
 ```
 
-**Terminal 2** - Express Backend:
-```bash
-cd server
-npm run dev
-```
-
-**Terminal 3** - React Frontend:
-```bash
-cd client
-npm run dev
-```
-
-Then open your browser and navigate to: **http://localhost:3000**
+Open your browser and navigate to: **http://localhost:3000**
 
 ---
 
 ## 👤 Admin Credentials
-
-**Email:** itsanuragmishra99@gmail.com  
-**Password:** 987654321Anu
-
-*Note: The admin user is automatically created when the backend starts for the first time.*
+*The system creates an admin account automatically when the backend boots for the first time.*
+- **Email:** `itsanuragmishra99@gmail.com`
+- **Password:** `987654321Anu`
 
 ---
 
-## 📁 Project Structure
-
-```
-FeedScope AI/
-├── client/                 # React frontend
-│   ├── src/
-│   │   ├── components/     # Reusable components
-│   │   ├── pages/          # Page components
-│   │   ├── context/        # Auth context
-│   │   ├── utils/          # Helper functions
-│   │   └── index.css       # Global styles
-│   ├── package.json
-│   └── vite.config.js
-├── server/                 # Express backend
-│   ├── src/
-│   │   ├── models/         # Mongoose schemas
-│   │   ├── routes/         # API routes
-│   │   ├── middleware/     # Auth middleware
-│   │   ├── services/       # Business logic
-│   │   ├── utils/          # Utilities
-│   │   └── server.js       # Main server file
-│   ├── .env                # Environment variables
-│   └── package.json
-└── sentiment-service/      # Python AI microservice
-    ├── main.py             # FastAPI application
-    ├── requirements.txt
-    └── README.md
-```
-
----
-
-## 🔌 API Endpoints
-
-### Authentication
-- `POST /api/auth/signup` - User registration
-- `POST /api/auth/login` - User login
-- `GET /api/auth/me` - Get current user
-
-### Feedback
-- `POST /api/feedback` - Submit feedback (public)
-- `GET /api/feedback` - Get all feedback with filters (admin)
-- `GET /api/feedback/stats` - Get statistics (admin)
-- `GET /api/feedback/trends` - Get trends (admin)
-- `PATCH /api/feedback/:id/status` - Update status (admin)
-
-### Export
-- `GET /api/export/csv` - Export as CSV (admin)
-- `POST /api/export/pdf` - Generate PDF report (admin)
-
----
-
-## 🌐 Environment Variables
-
-### Backend (.env)
+## 🌐 Environment Variables Setup
+### Server (`server/.env`)
 ```env
-MONGO_URI=mongodb+srv://...
-JWT_SECRET=your_jwt_secret
+MONGO_URI=mongodb+srv://<your_user>:<your_pass>@cluster...
+JWT_SECRET=your_super_secret_key
 PORT=5000
 SENTIMENT_SERVICE_URL=http://127.0.0.1:8001
+GEMINI_API_KEY=your_gemini_key_here
+CLIENT_URL=http://localhost:3000
 NODE_ENV=development
 ```
 
 ---
 
-## 🎯 Key Features Explained
-
-### 1. AI Sentiment Analysis
-- Uses HuggingFace DistilBERT model fine-tuned for sentiment
-- Returns: POSITIVE/NEGATIVE with confidence score
-- Maps to 5-level system: Very Positive, Positive, Neutral, Negative, Very Negative
-- Neutral threshold: confidence < 65%
-
-### 2. Multilingual Support
-- Users can submit feedback in Hindi or English
-- Hindi text is automatically translated to English for analysis
-- Both original and translated text are stored
-- Admin can toggle between original and translated views
-
-### 3. Voice Input
-- Uses browser Web Speech API
-- Supports both English (en-IN) and Hindi (hi-IN)
-- Real-time transcription display
-- Seamlessly integrates with text input
-
-### 4. Spam Detection
-- Rate limiting: Max 3 submissions per minute per email
-- Duplicate detection: 90%+ text similarity check
-- Flagged feedback displayed with warnings
-
-### 5. Critical Feedback System
-- Auto-flags based on:
-  - Very Negative sentiment
-  - Angry/Frustrated emotions
-  - Rating ≤ 2
-- Dashboard alert widget for immediate attention
-
----
-
-## 📊 Dashboard Analytics
-
-- **KPI Cards:** Total feedback, Average rating, Critical count, Positive rate
-- **Charts:**
-  - Sentiment Distribution (Pie Chart)
-  - Category Breakdown (Bar Chart)
-  - Sentiment Trend Over Time (Line Chart)
-- **Filters:** Sentiment, Category, Date range, Priority, Status, Language
-- **Search:** Full-text search in feedback and email
-- **Export:** CSV (all data) and PDF (summary report)
-
----
-
-## 🎨 UI Highlights
-
-- **Glassmorphism cards** with backdrop blur
-- **Gradient backgrounds** and smooth transitions
-- **Framer Motion animations** for delightful UX
-- **Responsive design** for all screen sizes
-- **Custom scrollbars** and hover effects
-- **Toast notifications** for user feedback
-
----
-
-## 🔒 Security
-
-- JWT-based authentication
-- Password hashing with bcryptjs
-- Role-based access control (user/admin)
-- Rate limiting on API endpoints
-- CORS and Helmet security headers
-
----
-
-## 🐛 Troubleshooting
-
-### Sentiment service not connecting
-- Make sure Python service is running on port 8001
-- Check firewall settings
-- Verify `SENTIMENT_SERVICE_URL` in .env
-
-### MongoDB connection failed
-- Verify MongoDB URI in .env
-- Check network/firewall
-- Ensure MongoDB Atlas IP whitelist includes your IP
-
-### Voice input not working
-- Requires HTTPS (or localhost for development)
-- Check browser compatibility (Chrome, Edge recommended)
-- Grant microphone permissions
+## 🔒 Security & Anti-Spam
+- **Dual Spam Protection**: Submissions are strictly rate-limited (Max 3 per minute/IP) alongside a text-similarity check to silently discard 90%+ duplicate ranting.
+- **RESTful Authencation**: JWT-based auth flows with bcrypt password hashing.
+- **Role-based Access Control (RBAC)**: Secure middleware gating Admin routes from standard users.
 
 ---
 
 ## 📝 License
-
 MIT License - Feel free to use this project for learning and development.
 
 ---
 
-## 🙏 Credits
-
-Built with ❤️ using modern web technologies
-
-- **AI/ML:** HuggingFace Transformers
-- **Frontend:** React, Tailwind CSS, Framer Motion
-- **Backend:** Node.js, Express, MongoDB
-- **Charts:** Recharts
-
----
-
-## 📧 Support
-
-For issues or questions, please contact the development team.
-
----
-
-**FeedScope AI** - Transforming Feedback into Actionable Insights 🚀
+Built with ❤️ by **Anurag Mishra**. Transforming Feedback into Actionable Insights! 🚀
