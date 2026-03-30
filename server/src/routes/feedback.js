@@ -948,6 +948,17 @@ router.patch('/:id/view', authenticate, requireRole('admin'), async (req, res) =
         if (feedback.status === STATUS.NEW || feedback.status === STATUS.IN_REVIEW) {
             feedback.status = STATUS.BEING_RESOLVED;
             await feedback.save();
+
+            const io = req.app.get('io');
+            if (io) {
+                // Tell clients tracking this ticket
+                io.emit('ticket:updated', { 
+                    ticketId: feedback.ticketId, 
+                    status: feedback.status
+                });
+                // Tell admin dashboards
+                io.to('admin-room').emit('feedback:updated', feedback);
+            }
         }
 
         res.json({ success: true, feedback });
@@ -986,7 +997,16 @@ router.patch('/:id/resolve', authenticate, requireRole('admin'), async (req, res
             { new: true }
         );
 
-        if (!feedback) return res.status(404).json({ success: false, message: 'Feedback not found' });
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('ticket:updated', { 
+                ticketId: feedback.ticketId, 
+                status: feedback.status,
+                adminResponse: feedback.adminResponse,
+                resolvedAt: feedback.resolvedAt
+            });
+            io.to('admin-room').emit('feedback:updated', feedback);
+        }
 
         res.json({ success: true, feedback });
     } catch (error) {

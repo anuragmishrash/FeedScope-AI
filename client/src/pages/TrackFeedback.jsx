@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Copy, CheckCheck, Star, Bot, Clock, CheckCircle2, Loader2, AlertCircle, Home, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
+import { connectSocket, disconnectSocket } from '../services/socketService';
 
 // Hardcoded for production to bypass Vercel environment variable injection bugs
 const API_BASE = 'https://feedscope-backend.onrender.com/api';
@@ -101,6 +102,31 @@ const TrackFeedback = () => {
             setLoading(false);
         }
     };
+
+    // ── Listen for Real-Time Updates ─────────────────────────────────────
+    useEffect(() => {
+        if (!feedback) return;
+
+        const socket = connectSocket();
+
+        const handleTicketUpdate = (data) => {
+            if (data.ticketId === feedback.ticketId) {
+                setFeedback(prev => ({
+                    ...prev,
+                    status: data.status,
+                    ...(data.adminResponse && { adminResponse: data.adminResponse }),
+                    ...(data.resolvedAt && { resolvedAt: data.resolvedAt })
+                }));
+                toast.success(`Ticket Status Updated: ${data.status}`, { icon: '🔔' });
+            }
+        };
+
+        socket.on('ticket:updated', handleTicketUpdate);
+
+        return () => {
+            socket.off('ticket:updated', handleTicketUpdate);
+        };
+    }, [feedback?.ticketId]);
 
     const handleCopy = async () => {
         await navigator.clipboard.writeText(feedback.ticketId);
