@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { LayoutList, CheckCircle2, ChevronRight, Inbox, AlertCircle, Ticket, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
+import { connectSocket, disconnectSocket } from '../services/socketService';
+import toast from 'react-hot-toast';
 
 // ── Stepper config ────────────────────────────────────────────────────────
 const STAGES = ['New', 'In Review', 'Being Resolved', 'Resolved'];
@@ -89,6 +91,36 @@ const MyFeedbacks = () => {
         };
         fetchMyFeedbacks();
     }, []);
+
+    // ── Listen for Real-Time Updates (Sockets) ───────────────────────────
+    useEffect(() => {
+        if (!user) return; // Only listen if authenticated
+
+        const socket = connectSocket();
+
+        const handleTicketUpdate = (data) => {
+            setFeedbacks(prev => {
+                // Check if this ticket belongs to the user's dashboard
+                const ticketExists = prev.some(fb => fb.ticketId === data.ticketId);
+                if (!ticketExists) return prev; // Ignore if not our ticket
+
+                toast.success(`Ticket ${data.ticketId} updated to: ${data.status}`, { icon: '🔔' });
+
+                // Map and update the specific ticket's status
+                return prev.map(fb => 
+                    fb.ticketId === data.ticketId 
+                        ? { ...fb, status: data.status } 
+                        : fb
+                );
+            });
+        };
+
+        socket.on('ticket:updated', handleTicketUpdate);
+
+        return () => {
+            socket.off('ticket:updated', handleTicketUpdate);
+        };
+    }, [user]);
 
     const stats = {
         total: feedbacks.length,
