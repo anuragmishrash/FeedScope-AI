@@ -1,6 +1,7 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+// Hardcoded for production to bypass Vercel environment variable injection bugs
+const SOCKET_URL = 'https://feedscope-backend.onrender.com';
 
 let socket = null;
 

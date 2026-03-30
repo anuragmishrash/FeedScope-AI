@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+// Hardcoded for production to completely bypass Vercel's broken caching on environment variables!
+const API_URL = 'https://feedscope-backend.onrender.com/api';
 
 const api = axios.create({
     baseURL: API_URL,
