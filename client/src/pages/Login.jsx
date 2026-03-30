@@ -1,133 +1,154 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, Sparkles } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
+import { Mail, Lock, ArrowRight, MessageSquare } from 'lucide-react';
+import toast from 'react-hot-toast';
+import GlassCard from '../components/ui/GlassCard';
+import Input from '../components/ui/Input';
+import Button from '../components/ui/Button';
 
 const Login = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [formData, setFormData] = useState({ email: '', password: '' });
     const [loading, setLoading] = useState(false);
-    const { login, user, isAdmin } = useAuth();
+    const { user, login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
-    // Redirect if already logged in
+    // Already logged-in → redirect away
     useEffect(() => {
         if (user) {
-            navigate(isAdmin ? '/admin/dashboard' : '/user/home');
+            if (user.role === 'admin') {
+                navigate('/admin/dashboard', { replace: true });
+            } else {
+                navigate('/my-feedbacks', { replace: true });
+            }
         }
-    }, [user, isAdmin, navigate]);
+    }, [user, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        try {
+            const result = await login(formData.email, formData.password);
+            if (result.success) {
+                toast.success('Welcome back to FeedScope!');
 
-        const result = await login(email, password);
+                // Read user role from the freshly stored user data
+                const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
 
-        if (result.success) {
-            toast.success('Login successful!');
-            // Redirect will happen via AuthContext update
-            setTimeout(() => {
-                navigate(result.user?.role === 'admin' ? '/admin/dashboard' : '/user/home');
-            }, 500);
-        } else {
-            toast.error(result.message || 'Login failed');
+                if (storedUser.role === 'admin') {
+                    navigate('/admin/dashboard', { replace: true });
+                    return;
+                }
+
+                const pendingTicketId = localStorage.getItem('pendingTicketClaim');
+                if (pendingTicketId) {
+                    navigate('/claim-ticket', { replace: true });
+                } else {
+                    const redirectTo = location.state?.from || '/my-feedbacks';
+                    navigate(redirectTo, { replace: true });
+                }
+            } else {
+                toast.error(result.message || 'Invalid credentials');
+            }
+        } catch (error) {
+            toast.error(error.message || 'Login failed');
+        } finally {
+            setLoading(false);
         }
-
-        setLoading(false);
     };
 
     return (
-        <div className="min-h-[90vh] flex items-center justify-center px-4 py-12">
-            {/* Background decoration */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl animate-float"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary-600/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-            </div>
+        <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden">
+            {/* Ambient Background */}
+            <div className="absolute inset-0 mesh-gradient opacity-60 pointer-events-none" />
+            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none" />
+
+            {/* Floating Orbs */}
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/20 rounded-full blur-[120px] animate-float" />
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-purple/20 rounded-full blur-[120px] animate-float-delayed" />
 
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="glass-card p-8 md:p-12 w-full max-w-md relative z-10"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full max-w-md relative z-10"
             >
-                {/* Icon */}
-                <div className="flex justify-center mb-6">
-                    <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/50">
-                        <Sparkles className="w-8 h-8 text-white" />
-                    </div>
-                </div>
-
-                {/* Title */}
-                <h2 className="text-3xl font-bold text-center mb-2">Welcome Back</h2>
-                <p className="text-gray-400 text-center mb-8">Sign in to your account</p>
-
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Email */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2">Email</label>
-                        <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="input-field pl-11"
-                                placeholder="Enter your email"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    {/* Password */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2">Password</label>
-                        <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="input-field pl-11"
-                                placeholder="Enter your password"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    {/* Submit Button */}
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="btn-primary w-full flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                <div className="text-center mb-8">
+                    <motion.h1
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.2 }}
+                        className="heading-hero text-4xl mb-2"
                     >
-                        {loading ? (
-                            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                        ) : (
-                            <>
-                                <LogIn className="w-5 h-5" />
-                                <span>Sign In</span>
-                            </>
-                        )}
-                    </button>
-                </form>
-
-                {/* Signup link */}
-                <p className="text-center text-gray-400 mt-6">
-                    Don't have an account?{' '}
-                    <Link to="/signup" className="text-primary-400 hover:text-primary-300 font-semibold transition-colors">
-                        Sign up
-                    </Link>
-                </p>
-
-                {/* Demo credentials */}
-                <div className="mt-6 p-4 bg-primary-500/10 border border-primary-500/30 rounded-xl">
-                    <p className="text-xs text-gray-400 text-center">
-                        <strong className="text-primary-400">Admin Demo:</strong><br />
-                        itsanuragmishra99@gmail.com / 987654321Anu
-                    </p>
+                        FeedScope AI
+                    </motion.h1>
+                    <motion.p
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                        className="text-slate-400"
+                    >
+                        Sign in to access your feedback dashboard
+                    </motion.p>
                 </div>
+
+                <GlassCard className="backdrop-blur-2xl">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <Input
+                            label="Email Address"
+                            type="email"
+                            placeholder="name@company.com"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            icon={Mail}
+                            required
+                        />
+
+                        <div className="space-y-1">
+                            <Input
+                                label="Password"
+                                type="password"
+                                placeholder="••••••••"
+                                value={formData.password}
+                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                icon={Lock}
+                                required
+                            />
+                            <div className="flex justify-end">
+                                <Link to="#" className="text-xs text-primary-400 hover:text-primary-300 transition-colors">
+                                    Forgot password?
+                                </Link>
+                            </div>
+                        </div>
+
+                        <Button
+                            type="submit"
+                            className="w-full py-3.5 text-base"
+                            isLoading={loading}
+                            icon={ArrowRight}
+                        >
+                            Sign In
+                        </Button>
+                    </form>
+
+                    <div className="mt-6 pt-6 border-t border-white/10 text-center space-y-3">
+                        <p className="text-slate-400 text-sm">
+                            Don't have an account?{' '}
+                            <Link to="/signup" className="text-primary-400 hover:text-primary-300 font-medium transition-colors">
+                                Create account
+                            </Link>
+                        </p>
+                        {/* Guest exit */}
+                        <p className="text-slate-500 text-xs">
+                            Just want to submit feedback?{' '}
+                            <Link to="/feedback" className="text-slate-400 hover:text-white transition-colors inline-flex items-center gap-1">
+                                <MessageSquare size={11} /> Go to Feedback Form →
+                            </Link>
+                        </p>
+                    </div>
+                </GlassCard>
             </motion.div>
         </div>
     );

@@ -1,8 +1,14 @@
+import Link from 'react-router-dom'; // Error: This is a backend script, should not import frontend stuff.
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import Feedback from '../models/Feedback.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load env vars
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const sampleFeedbacks = [
     {

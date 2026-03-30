@@ -1,7 +1,3 @@
-# FeedScope AI
-
-🚀 **Smart Feedback Insight & Sentiment Analysis System**
-
 A production-grade MERN web application with AI-powered sentiment analysis, multilingual support (Hindi & English), voice input, and comprehensive admin analytics dashboard.
 
 ---

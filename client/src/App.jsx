@@ -1,7 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
+
+// Route guards
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 import Navbar from './components/Navbar';
 
 // Pages
@@ -9,6 +12,9 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import UserHome from './pages/UserHome';
 import AdminDashboard from './pages/AdminDashboard';
+import TrackFeedback from './pages/TrackFeedback';
+import MyFeedbacks from './pages/MyFeedbacks';
+import ClaimTicket from './pages/ClaimTicket';
 
 function App() {
     return (
@@ -17,35 +23,49 @@ function App() {
                 <div className="min-h-screen">
                     <Navbar />
                     <Routes>
-                        {/* Public routes */}
+                        {/* Public routes — no auth required */}
+                        <Route path="/" element={<Navigate to="/feedback" replace />} />
+                        <Route path="/feedback" element={<UserHome />} />
+                        <Route path="/track" element={<TrackFeedback />} />
+                        <Route path="/track/:ticketId" element={<TrackFeedback />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/signup" element={<Signup />} />
 
-                        {/* User routes */}
+                        {/* Legacy path support */}
+                        <Route path="/user/home" element={<Navigate to="/feedback" replace />} />
+
+                        {/* Protected user routes — login required, admin redirected away */}
                         <Route
-                            path="/user/home"
+                            path="/my-feedbacks"
                             element={
                                 <ProtectedRoute>
-                                    <UserHome />
+                                    <MyFeedbacks />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/claim-ticket"
+                            element={
+                                <ProtectedRoute>
+                                    <ClaimTicket />
                                 </ProtectedRoute>
                             }
                         />
 
-                        {/* Admin routes */}
+                        {/* Admin-only routes */}
                         <Route
                             path="/admin/dashboard"
                             element={
-                                <ProtectedRoute requireAdmin>
+                                <AdminRoute>
                                     <AdminDashboard />
-                                </ProtectedRoute>
+                                </AdminRoute>
                             }
                         />
 
-                        {/* Redirect root based on auth */}
-                        <Route path="/" element={<Navigate to="/login" replace />} />
+                        {/* Catch-all */}
+                        <Route path="*" element={<Navigate to="/feedback" replace />} />
                     </Routes>
 
-                    {/* Toast notifications */}
                     <Toaster
                         position="top-right"
                         toastOptions={{
@@ -57,18 +77,8 @@ function App() {
                                 borderRadius: '12px',
                                 backdropFilter: 'blur(10px)',
                             },
-                            success: {
-                                iconTheme: {
-                                    primary: '#10b981',
-                                    secondary: '#fff',
-                                },
-                            },
-                            error: {
-                                iconTheme: {
-                                    primary: '#ef4444',
-                                    secondary: '#fff',
-                                },
-                            },
+                            success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
+                            error:   { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
                         }}
                     />
                 </div>

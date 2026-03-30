@@ -1,0 +1,53 @@
+ M .gitignore
+ M README.md
+ M client/package-lock.json
+ M client/package.json
+ M client/src/App.jsx
+ M client/src/components/FeedbackModal.jsx
+ M client/src/components/Navbar.jsx
+ M client/src/components/ProtectedRoute.jsx
+ M client/src/index.css
+ M client/src/pages/AdminDashboard.jsx
+ M client/src/pages/Login.jsx
+ M client/src/pages/Signup.jsx
+ M client/src/pages/UserHome.jsx
+ M client/tailwind.config.js
+ M sentiment-service/main.py
+ M server/package-lock.json
+ M server/package.json
+ M server/src/models/Feedback.js
+ M server/src/routes/feedback.js
+ M server/src/server.js
+ M server/src/services/emotionService.js
+ M server/src/services/sentimentService.js
+ M server/src/services/spamService.js
+ M server/src/utils/seedFeedback.js
+?? DASHBOARD-FIX-REAL-DATA.md
+?? FIX_DASHBOARD_COMPLETE.md
+?? GSD-STYLE.md
+?? PROJECT_RULES.md
+?? client/src/components/AdminRoute.jsx
+?? client/src/components/AnimatedCounter.jsx
+?? client/src/components/ui/
+?? client/src/pages/ClaimTicket.jsx
+?? client/src/pages/MyFeedbacks.jsx
+?? client/src/pages/TrackFeedback.jsx
+?? client/src/services/
+?? client/src/utils/clientEmojiDetector.js
+?? docs/
+?? git_status.txt
+?? scripts/
+?? server/remove_fake_data.js
+?? server/seed_quick.js
+?? server/src/middleware/optionalAuth.js
+?? server/src/models/SummaryCache.js
+?? server/src/routes/track.js
+?? server/src/services/aiSummaryService.js
+?? server/src/services/personalizedResponseService.js
+?? server/src/services/responseSuggestionService.js
+?? server/src/services/sentimentBlender.js
+?? server/src/utils/emojiDetector.js
+?? server/src/utils/emotionValidator.js
+?? server/src/utils/sentimentMapper.js
+?? server/src/utils/statusConstants.js
+?? server/src/utils/ticketIdGenerator.js

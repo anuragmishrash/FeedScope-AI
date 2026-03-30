@@ -64,3 +64,7 @@ yarn.lock~
 # Docker
 *.log
 docker-compose.override.yml
+
+# AI agent folders
+.agent/
+.gsd/

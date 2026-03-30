@@ -13,7 +13,17 @@ const feedbackSchema = new mongoose.Schema({
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        default: null
+    },
+    userName: { type: String, default: null },   // snapshot at submission time
+    userEmail: { type: String, default: null },  // snapshot at submission time
+
+    // Ticket System (Resolution Tracker)
+    ticketId: {
+        type: String,
+        unique: true,
+        sparse: true  // allows null for old records
     },
 
     // Feedback Content
@@ -113,11 +123,69 @@ const feedbackSchema = new mongoose.Schema({
         type: String
     },
 
-    // Workflow Status
+    // Workflow Status — includes 'Being Resolved' for auto-progression
     status: {
         type: String,
-        enum: ['New', 'In Review', 'Resolved', 'Closed'],
+        enum: ['New', 'In Review', 'Being Resolved', 'Resolved', 'Closed'],
         default: 'New'
+    },
+
+    // Emoji Analysis
+    hasEmoji: {
+        type: Boolean,
+        default: false
+    },
+    emojiList: [{
+        type: String
+    }],
+    dominantEmojiSentiment: {
+        type: String,
+        enum: ['positive', 'negative', 'neutral', null],
+        default: null
+    },
+
+    // Legacy AI Response (kept for backward compat — not shown in new UI)
+    suggestedResponse: {
+        type: String
+    },
+
+    // Personalized AI Response (Resolution Tracker — replaces suggestedResponse in UI)
+    personalizedAIResponse: {
+        type: String
+    },
+
+    // Admin Resolution
+    adminResponse: {
+        type: String,
+        default: null
+    },
+    resolvedAt: {
+        type: Date,
+        default: null
+    },
+
+    // User Satisfaction Rating
+    satisfactionRating: {
+        type: Number,
+        min: 1,
+        max: 5,
+        default: null
+    },
+    satisfactionSubmitted: {
+        type: Boolean,
+        default: false
+    },
+
+    // Sentiment Analysis Flags
+    sentimentConflict: {
+        type: Boolean,
+        default: false
+    },
+    sentimentConfidence: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 100
     },
 
     // Timestamps
@@ -137,6 +205,7 @@ feedbackSchema.index({ createdAt: -1 });
 feedbackSchema.index({ sentimentLabel: 1 });
 feedbackSchema.index({ isCritical: 1 });
 feedbackSchema.index({ status: 1 });
+feedbackSchema.index({ ticketId: 1 });
 
 // Update timestamp on save
 feedbackSchema.pre('save', function (next) {

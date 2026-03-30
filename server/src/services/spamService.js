@@ -50,6 +50,7 @@ export const checkDuplicate = async (text, email) => {
 
         // Check similarity with recent feedback
         for (const feedback of recentFeedback) {
+            if (!feedback.feedbackOriginalText) continue; // guard against missing field
             const similarity = stringSimilarity.compareTwoStrings(
                 text.toLowerCase(),
                 feedback.feedbackOriginalText.toLowerCase()
