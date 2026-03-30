@@ -4,3 +4,4 @@ transformers==4.36.2
 torch
 pydantic==2.5.3
 python-multipart==0.0.6
+sentencepiece
