@@ -904,9 +904,10 @@ const AdminDashboard = () => {
             </div>
 
             {/* Filter Bar */}
-            <GlassCard className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="lg:col-span-1">
+            <GlassCard className="p-4 flex flex-col gap-4">
+                {/* Search & Selects */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                    <div className="lg:col-span-2">
                         <Input
                             placeholder="Search feedback..."
                             icon={Search}
@@ -932,11 +933,6 @@ const AdminDashboard = () => {
                         <option value="Medium">Medium</option>
                         <option value="Low">Low</option>
                     </select>
-                    <select className="input-premium" value={filters.hasEmoji} onChange={(e) => setFilters({ ...filters, hasEmoji: e.target.value })}>
-                        <option value="">All Emoji</option>
-                        <option value="true">Has Emoji 😊</option>
-                        <option value="false">No Emoji</option>
-                    </select>
                     <select className="input-premium" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
                         <option value="">All Statuses</option>
                         <option value="New">New</option>
@@ -945,6 +941,49 @@ const AdminDashboard = () => {
                         <option value="Resolved">Resolved</option>
                         <option value="__awaiting">⏳ Awaiting Resolution</option>
                     </select>
+                </div>
+                
+                {/* Date Filters & Extras */}
+                <div className="flex flex-col sm:flex-row items-end gap-4 pt-4 border-t border-white/5">
+                    <div className="flex flex-col gap-1.5 w-full sm:w-48">
+                        <label className="text-xs text-slate-400 font-medium px-1 uppercase tracking-wide">Start Date</label>
+                        <input 
+                            type="date" 
+                            className="input-premium [color-scheme:dark] block w-full" 
+                            value={filters.startDate} 
+                            onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-1.5 w-full sm:w-48">
+                        <label className="text-xs text-slate-400 font-medium px-1 uppercase tracking-wide">End Date</label>
+                        <input 
+                            type="date" 
+                            className="input-premium [color-scheme:dark] block w-full" 
+                            value={filters.endDate} 
+                            onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+                        />
+                    </div>
+                    
+                    <div className="w-full sm:w-auto mt-2 sm:mt-0 ml-auto">
+                        <select className="input-premium inline-block" value={filters.hasEmoji} onChange={(e) => setFilters({ ...filters, hasEmoji: e.target.value })}>
+                            <option value="">All Emoji Stats</option>
+                            <option value="true">Has Emoji 😊</option>
+                            <option value="false">No Emoji</option>
+                        </select>
+                    </div>
+                    
+                    {(filters.startDate || filters.endDate || filters.search || filters.sentiment !== '' || filters.status !== '') && (
+                        <button
+                            onClick={() => setFilters({
+                                search: '', sentiment: '', category: '', rating: '',
+                                priority: '', status: '', language: '', inputMode: '',
+                                startDate: '', endDate: '', isCritical: '', hasEmoji: '', userType: ''
+                            })}
+                            className="text-xs text-slate-400 hover:text-white transition-colors underline decoration-slate-600 px-2 py-2 whitespace-nowrap"
+                        >
+                            Reset
+                        </button>
+                    )}
                 </div>
             </GlassCard>
 
