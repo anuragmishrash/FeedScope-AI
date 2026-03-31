@@ -475,6 +475,11 @@ const AdminDashboard = () => {
     // AI Summary state
     const [showAISummary, setShowAISummary] = useState(false);
 
+    // Export state
+    const [exportOpen, setExportOpen] = useState(false);
+    const [exportLoading, setExportLoading] = useState(null); // 'pdf' | 'csv' | null
+    const exportRef = useRef(null);
+
     // Fetch dashboard data
     const aiSummaryCallbackRef = useRef(null);
 
@@ -500,6 +505,50 @@ const AdminDashboard = () => {
     useEffect(() => {
         fetchDashboardData();
     }, [fetchDashboardData]);
+
+    // Close export dropdown on outside click
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (exportRef.current && !exportRef.current.contains(e.target)) {
+                setExportOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Export handler
+    const handleExport = async (type) => {
+        setExportLoading(type);
+        setExportOpen(false);
+        try {
+            const token = localStorage.getItem('token');
+            const BACKEND = 'https://feedscope-backend.onrender.com';
+            const res = await fetch(`${BACKEND}/api/export/${type}?period=week`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.message || 'Export failed');
+            }
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = type === 'pdf'
+                ? `FeedScope-Report-${new Date().toISOString().split('T')[0]}.pdf`
+                : `FeedScope-Data-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            toast.success(type === 'pdf' ? '📄 PDF report downloaded!' : '📊 CSV data downloaded!');
+        } catch (err) {
+            toast.error(err.message || 'Export failed. Please try again.');
+        } finally {
+            setExportLoading(null);
+        }
+    };
 
     // ── Socket.io — admin only ────────────────────────────────────────────────
     useEffect(() => {
@@ -642,7 +691,58 @@ const AdminDashboard = () => {
                         <ChevronDown size={14} className={`transition-transform ${showAISummary ? 'rotate-180' : ''}`} />
                     </button>
 
-                    <Button variant="secondary" icon={Download} onClick={() => {}}>Export</Button>
+                    {/* Export Dropdown */}
+                    <div className="relative" ref={exportRef}>
+                        <button
+                            onClick={() => setExportOpen(o => !o)}
+                            disabled={exportLoading !== null}
+                            className="flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 text-white px-4 py-2 rounded-xl transition-all text-sm font-medium disabled:opacity-60"
+                        >
+                            {exportLoading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    <span>{exportLoading === 'pdf' ? 'Generating PDF…' : 'Exporting CSV…'}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Download size={15} />
+                                    <span>Export</span>
+                                    <ChevronDown size={13} className={`transition-transform duration-200 ${exportOpen ? 'rotate-180' : ''}`} />
+                                </>
+                            )}
+                        </button>
+
+                        {exportOpen && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -4 }}
+                                className="absolute right-0 top-full mt-2 w-52 bg-[#1a1d2e] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
+                            >
+                                <button
+                                    onClick={() => handleExport('pdf')}
+                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-all text-left"
+                                >
+                                    <span className="text-xl">📄</span>
+                                    <div>
+                                        <div className="text-sm font-medium text-white">Export as PDF</div>
+                                        <div className="text-xs text-white/40">Full formatted report</div>
+                                    </div>
+                                </button>
+                                <div className="border-t border-white/10" />
+                                <button
+                                    onClick={() => handleExport('csv')}
+                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-all text-left"
+                                >
+                                    <span className="text-xl">📊</span>
+                                    <div>
+                                        <div className="text-sm font-medium text-white">Export as CSV</div>
+                                        <div className="text-xs text-white/40">Raw data for spreadsheets</div>
+                                    </div>
+                                </button>
+                            </motion.div>
+                        )}
+                    </div>
                 </motion.div>
             </div>
 
