@@ -386,7 +386,8 @@ const buildCSV = (feedbacks) => {
         f.resolvedAt ? new Date(f.resolvedAt).toLocaleString('en-IN') : '',
     ].map(esc).join(','));
 
-    return [headers.join(','), ...rows].join('\n');
+    // prepend UTF-8 BOM so Excel opens it correctly without breaking special characters
+    return '\uFEFF' + [headers.join(','), ...rows].join('\n');
 };
 
 // ─── PDF Generation ──────────────────────────────────────────────────────────
@@ -444,15 +445,16 @@ router.get('/pdf', authenticate, requireRole('admin'), async (req, res) => {
         ]);
 
         const html = buildPDFHTML(feedbacks, null, cachedSummary, period);
-        const pdf = await generatePDF(html);
+        const pdfUint8Array = await generatePDF(html);
+        const pdfBuffer = Buffer.from(pdfUint8Array);
 
         const today = new Date().toISOString().split('T')[0];
         res.set({
             'Content-Type': 'application/pdf',
             'Content-Disposition': `attachment; filename="FeedScope-Report-${today}.pdf"`,
-            'Content-Length': pdf.length,
+            'Content-Length': pdfBuffer.length,
         });
-        res.send(pdf);
+        res.end(pdfBuffer);
     } catch (err) {
         console.error('[Export] PDF error:', err.message);
         res.status(500).json({ success: false, message: 'Failed to generate PDF. Please try again.' });
@@ -477,7 +479,7 @@ router.get('/csv', authenticate, requireRole('admin'), async (req, res) => {
             'Content-Type': 'text/csv; charset=utf-8',
             'Content-Disposition': `attachment; filename="FeedScope-Data-${today}.csv"`,
         });
-        res.send(csv);
+        res.end(csv);
     } catch (err) {
         console.error('[Export] CSV error:', err.message);
         res.status(500).json({ success: false, message: 'Failed to export CSV.' });
