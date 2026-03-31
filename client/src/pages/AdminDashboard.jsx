@@ -523,8 +523,8 @@ const AdminDashboard = () => {
         setExportOpen(false);
         try {
             const token = localStorage.getItem('token');
-            const BACKEND = 'https://feedscope-backend.onrender.com';
-            const res = await fetch(`${BACKEND}/api/export/${type}?period=week`, {
+            const baseURL = api.defaults.baseURL || import.meta.env.VITE_API_URL || '';
+            const res = await fetch(`${baseURL}/export/${type}?period=week`, {
                 headers: { 'Authorization': `Bearer ${token}` },
             });
             if (!res.ok) {
