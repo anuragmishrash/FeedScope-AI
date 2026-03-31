@@ -1,7 +1,9 @@
 import { io } from 'socket.io-client';
 
-// Hardcoded for production to bypass Vercel environment variable injection bugs
-const SOCKET_URL = 'https://feedscope-backend.onrender.com';
+// In dev (localhost), point to local server. In production (Vercel), point to Render.
+const SOCKET_URL = import.meta.env.DEV
+    ? 'http://localhost:5000'
+    : 'https://feedscope-backend.onrender.com';
 
 let socket = null;
 

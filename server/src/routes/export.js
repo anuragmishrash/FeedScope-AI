@@ -391,7 +391,7 @@ const buildCSV = (feedbacks) => {
 
 // ─── PDF Generation ──────────────────────────────────────────────────────────
 const generatePDF = async (html) => {
-    const browser = await puppeteer.launch({
+    const launchArgs = {
         headless: 'new',
         args: [
             '--no-sandbox',
@@ -399,7 +399,14 @@ const generatePDF = async (html) => {
             '--disable-dev-shm-usage',
             '--disable-gpu',
         ],
-    });
+    };
+
+    // On Render (Linux), use system Chromium to avoid 400MB download bloating the build
+    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+        launchArgs.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    }
+
+    const browser = await puppeteer.launch(launchArgs);
     try {
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: 'networkidle0' });
