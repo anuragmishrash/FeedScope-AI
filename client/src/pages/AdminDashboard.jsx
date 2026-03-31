@@ -524,7 +524,20 @@ const AdminDashboard = () => {
         try {
             const token = localStorage.getItem('token');
             const baseURL = api.defaults.baseURL || import.meta.env.VITE_API_URL || '';
-            const res = await fetch(`${baseURL}/export/${type}?period=week`, {
+            
+            // Generate query parameters from the active dashboard filters
+            const queryParams = new URLSearchParams();
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== '') queryParams.append(key, value);
+            });
+            // Fallback to exactly what the dashboard shows if no dates exist
+            if (!filters.startDate && !filters.endDate) {
+                queryParams.append('period', 'week');
+            }
+            
+            const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+            
+            const res = await fetch(`${baseURL}/export/${type}${queryString}`, {
                 headers: { 'Authorization': `Bearer ${token}` },
             });
             if (!res.ok) {

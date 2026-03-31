@@ -6,8 +6,21 @@ import { authenticate, requireRole } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// ─── Date filter helper (mirrors feedback.js logic) ────────────────────────
-const getDateFilter = (period) => {
+// ─── Date filter helper ──────────────────────────────────────────────────────
+const getDateFilter = (query) => {
+    const { period, startDate, endDate } = query || {};
+    
+    if (startDate || endDate) {
+        const dateFilter = {};
+        if (startDate) dateFilter.$gte = new Date(startDate);
+        if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            dateFilter.$lte = end;
+        }
+        return { createdAt: dateFilter };
+    }
+
     const now = new Date();
     switch (period) {
         case 'today':
@@ -20,7 +33,12 @@ const getDateFilter = (period) => {
     }
 };
 
-const getPeriodLabel = (period) => {
+const getPeriodLabel = (query) => {
+    const { period, startDate, endDate } = query || {};
+    if (startDate && endDate) return 'Custom Range';
+    if (startDate) return 'Custom Start Date';
+    if (endDate) return 'Custom End Date';
+    
     switch (period) {
         case 'today': return 'Today';
         case 'month': return 'Last 30 Days';
@@ -37,17 +55,23 @@ const formatDateTime = (d) =>
 const renderStars = (r) => '★'.repeat(r) + '☆'.repeat(5 - r);
 
 // ─── Build PDF HTML ─────────────────────────────────────────────────────────
-const buildPDFHTML = (feedbacks, stats, summary, period) => {
-    const periodLabel = getPeriodLabel(period);
+const buildPDFHTML = (feedbacks, stats, summary, query) => {
+    const periodLabel = getPeriodLabel(query);
     const now = new Date();
     const dateStr = formatDate(now);
     const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
     const reportId = `FSC-RPT-${now.toISOString().split('T')[0].replace(/-/g, '')}`;
 
     // Date range string
-    const dateFilter = getDateFilter(period);
-    const fromDate = formatDate(dateFilter.createdAt.$gte);
-    const periodDateRange = period === 'today' ? dateStr : `${fromDate} – ${dateStr}`;
+    const dateFilter = getDateFilter(query);
+    const gteObj = dateFilter.createdAt.$gte;
+    const lteObj = dateFilter.createdAt.$lte;
+    
+    const fromDate = gteObj ? formatDate(gteObj) : '';
+    const toDate = lteObj ? formatDate(lteObj) : dateStr;
+    const periodDateRange = (query.period === 'today' && !query.startDate) 
+        ? dateStr 
+        : (fromDate ? `${fromDate} – ${toDate}` : toDate);
 
     // KPI calculations
     const totalFeedback = feedbacks.length;
@@ -433,18 +457,18 @@ const generatePDF = async (html) => {
 // ─── GET /api/export/pdf ─────────────────────────────────────────────────────
 router.get('/pdf', authenticate, requireRole('admin'), async (req, res) => {
     try {
-        const period = req.query.period || 'week';
-        const dateFilter = getDateFilter(period);
+        const dateFilter = getDateFilter(req.query);
+        const cachePeriod = req.query.period || 'week'; // Used only for SummaryCache fallback
 
         const [feedbacks, cachedSummary] = await Promise.all([
             Feedback.find(dateFilter)
                 .sort({ createdAt: -1 })
                 .select('ticketId feedbackOriginalText sentimentLabel sentimentLevel emotionDetected categoryUserSelected priority status rating userName userEmail userId hasEmoji sentimentConflict isCritical suggestedResponse createdAt resolvedAt')
                 .lean(),
-            SummaryCache.findOne({ period, expiresAt: { $gt: new Date() } }).lean(),
+            SummaryCache.findOne({ period: cachePeriod, expiresAt: { $gt: new Date() } }).lean(),
         ]);
 
-        const html = buildPDFHTML(feedbacks, null, cachedSummary, period);
+        const html = buildPDFHTML(feedbacks, null, cachedSummary, req.query);
         const pdfUint8Array = await generatePDF(html);
         const pdfBuffer = Buffer.from(pdfUint8Array);
 
@@ -464,8 +488,7 @@ router.get('/pdf', authenticate, requireRole('admin'), async (req, res) => {
 // ─── GET /api/export/csv ─────────────────────────────────────────────────────
 router.get('/csv', authenticate, requireRole('admin'), async (req, res) => {
     try {
-        const period = req.query.period || 'week';
-        const dateFilter = getDateFilter(period);
+        const dateFilter = getDateFilter(req.query);
 
         const feedbacks = await Feedback.find(dateFilter)
             .sort({ createdAt: -1 })
