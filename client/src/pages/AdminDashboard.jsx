@@ -544,18 +544,34 @@ const AdminDashboard = () => {
                 const data = await res.json().catch(() => ({}));
                 throw new Error(data.message || 'Export failed');
             }
-            const blob = await res.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = type === 'pdf'
-                ? `FeedScope-Report-${new Date().toISOString().split('T')[0]}.pdf`
-                : `FeedScope-Data-${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            toast.success(type === 'pdf' ? '📄 PDF report downloaded!' : '📊 CSV data downloaded!');
+
+            if (type === 'pdf') {
+                const html = await res.text();
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) {
+                    throw new Error('Pop-up blocked! Please allow pop-ups to print the PDF.');
+                }
+                printWindow.document.write(html);
+                printWindow.document.close();
+                printWindow.focus();
+                
+                // Wait for styles/images to load then trigger print
+                setTimeout(() => {
+                    printWindow.print();
+                    toast.success('📄 PDF report rendered! Check your print dialog.');
+                }, 1000);
+            } else {
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `FeedScope-Data-${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                toast.success('📊 CSV data downloaded!');
+            }
         } catch (err) {
             toast.error(err.message || 'Export failed. Please try again.');
         } finally {

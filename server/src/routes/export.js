@@ -414,46 +414,6 @@ const buildCSV = (feedbacks) => {
     return '\uFEFF' + [headers.join(','), ...rows].join('\n');
 };
 
-// ─── PDF Generation ──────────────────────────────────────────────────────────
-const generatePDF = async (html) => {
-    const launchArgs = {
-        headless: 'new',
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-gpu',
-        ],
-    };
-
-    // On Render (Linux), use system Chromium to avoid 400MB download bloating the build
-    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-        launchArgs.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
-    }
-
-    const browser = await puppeteer.launch(launchArgs);
-    try {
-        const page = await browser.newPage();
-        await page.setContent(html, { waitUntil: 'networkidle0' });
-        const pdf = await page.pdf({
-            format: 'A4',
-            printBackground: true,
-            displayHeaderFooter: true,
-            headerTemplate: '<div></div>',
-            footerTemplate: `
-                <div style="font-size:9px;color:#888;width:100%;padding:0 40px;display:flex;justify-content:space-between;font-family:sans-serif;box-sizing:border-box;">
-                    <span>FeedScope AI — Confidential</span>
-                    <span>Feedback Intelligence Report</span>
-                    <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
-                </div>`,
-            margin: { top: '20px', bottom: '40px', left: '0px', right: '0px' },
-        });
-        return pdf;
-    } finally {
-        await browser.close();
-    }
-};
-
 // ─── GET /api/export/pdf ─────────────────────────────────────────────────────
 router.get('/pdf', authenticate, requireRole('admin'), async (req, res) => {
     try {
@@ -469,16 +429,11 @@ router.get('/pdf', authenticate, requireRole('admin'), async (req, res) => {
         ]);
 
         const html = buildPDFHTML(feedbacks, null, cachedSummary, req.query);
-        const pdfUint8Array = await generatePDF(html);
-        const pdfBuffer = Buffer.from(pdfUint8Array);
 
-        const today = new Date().toISOString().split('T')[0];
         res.set({
-            'Content-Type': 'application/pdf',
-            'Content-Disposition': `attachment; filename="FeedScope-Report-${today}.pdf"`,
-            'Content-Length': pdfBuffer.length,
+            'Content-Type': 'text/html; charset=utf-8',
         });
-        res.end(pdfBuffer);
+        res.send(html);
     } catch (err) {
         console.error('[Export] PDF error:', err.message);
         res.status(500).json({ success: false, message: 'Failed to generate PDF. Please try again.' });
