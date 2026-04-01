@@ -424,7 +424,9 @@ router.get('/pdf', authenticate, requireRole('admin'), async (req, res) => {
                 .sort({ createdAt: -1 })
                 .select('ticketId feedbackOriginalText sentimentLabel sentimentLevel emotionDetected categoryUserSelected priority status rating userName userEmail userId hasEmoji sentimentConflict isCritical suggestedResponse createdAt resolvedAt')
                 .lean(),
-            SummaryCache.findOne({ period: cachePeriod, expiresAt: { $gt: new Date() } }).lean(),
+            SummaryCache.findOne({ period: cachePeriod })
+                .sort({ createdAt: -1 })
+                .lean(),
         ]);
 
         const html = buildPDFHTML(feedbacks, null, cachedSummary, req.query);
